@@ -5,7 +5,7 @@ from distutils.dir_util import copy_tree
 import zipfile
 import importlib
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 
 def backup_fts():
@@ -34,7 +34,14 @@ def backup_fts():
         # FreeTAKServerDataPackageFolder
         copy_tree(Mainconfig.MainConfig.DataPackageFilePath, f"{tmp_dir}/FreeTAKServerDataPackageFolder")
         # certs
-        copy_tree(Mainconfig.MainConfig.certsPath, f"{tmp_dir}/certs")
+        # copy_tree(Mainconfig.MainConfig.certsPath, f"{tmp_dir}/certs")
+        copy_tree(Mainconfig.MainConfig.clientPackages, f"{tmp_dir}/ClientPackages")
+        copyfile(Mainconfig.MainConfig.CA, f"{tmp_dir}/ca.pem")
+        copyfile(Mainconfig.MainConfig.CAkey, f"{tmp_dir}/ca.key")
+        copyfile(Mainconfig.MainConfig.pemDir, f"{tmp_dir}/pubserver.pem")
+        copyfile(Mainconfig.MainConfig.keyDir, f"{tmp_dir}/pubserver.key")
+        copyfile(Mainconfig.MainConfig.p12Dir, f"{tmp_dir}/pubserver.p12")
+        copyfile(Mainconfig.MainConfig.unencryptedKey, f"{tmp_dir}/pubserver.key.unencrypted")
     except PermissionError as e:
         print("You are not root, this tool needs to be running as root.")
         exit(1)
@@ -69,7 +76,14 @@ def restore_fts(backup_zip: str = "./fts-backup.zip"):
             # This happens because the directory is empty when backing up so isn't present
             pass
         # certs
-        copy_tree(f"{backup_dir}/certs", Mainconfig.MainConfig.certsPath)
+        # copy_tree(f"{backup_dir}/certs", Mainconfig.MainConfig.certsPath)
+        copy_tree(f"{backup_dir}/ClientPackages", Mainconfig.MainConfig.clientPackages)
+        copyfile(f"{backup_dir}/ca.pem", Mainconfig.MainConfig.CA)
+        copyfile(f"{backup_dir}/ca.key", Mainconfig.MainConfig.CAkey)
+        copyfile(f"{backup_dir}/pubserver.pem", Mainconfig.MainConfig.pemDir)
+        copyfile(f"{backup_dir}/pubserver.key", Mainconfig.MainConfig.keyDir)
+        copyfile(f"{backup_dir}/pubserver.p12", Mainconfig.MainConfig.p12Dir)
+        copyfile(f"{backup_dir}/pubserver.key.unencrypted", Mainconfig.MainConfig.unencryptedKey)
     except PermissionError as e:
         print("You are not root, this tool needs to be running as root.")
         exit(1)
@@ -111,11 +125,12 @@ def restore_fts_ui(backup_zip: str = "./fts-ui-backup.zip"):
 
 
 if __name__ == '__main__':
-    print("""
-    -------------------------
-    FreeTAKServer Backup Tool
-    -------------------------
-    
+    print(f"""
+-------------------------
+FreeTAKServer Backup Tool
+-------------------------
+Version : {VERSION}
+-------------------------
     """)
     backup_or_restore = input("Backup or Restore? b/r  ")
     if backup_or_restore.lower() == "b":
